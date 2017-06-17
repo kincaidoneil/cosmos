@@ -1,0 +1,26 @@
+{
+  "name": "cosmos",
+  "main": "index.js",
+  "scripts": {
+    "dev": "poi",
+    "build": "poi build"
+  },
+  "devDependencies": {
+    "node-sass": "^4.5.3",
+    "poi": "^9.0.2",
+    "sass-loader": "^6.0.5"
+  },
+  "dependencies": {
+    "algoliasearch": "^3.23.0",
+    "axios": "^0.16.2",
+    "bulma": "^0.4.2",
+    "date-fns": "^1.28.5",
+    "firebase": "^4.1.2",
+    "font-awesome-sass-loader": "^2.0.1",
+    "lodash": "^4.17.4",
+    "node-vibrant": "^3.0.0-alpha.2",
+    "portal-vue": "^1.0.1",
+    "vue": "^2.3.4",
+    "vuex": "^2.3.1"
+  }
+}
