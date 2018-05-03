@@ -4,7 +4,7 @@
 
 ![Screenshot](/screenshot.png)
 
-## Ideas
+### Ideas
 
 - Add search functionality with [Algolia](https://www.algolia.com/)
 - Add filtering by tag
