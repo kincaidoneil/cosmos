@@ -28,24 +28,23 @@ db.ref('tags').on('value', snapshot => {
   store.commit('UPDATE_TAGS', snapshot.val())
 })
 
-// TODO: Move this to a Firebase function
-db.ref('links').on('child_added', snapshot => {
-  const url = snapshot.val().url
-  axios.get('https://mercury.postlight.com/parser', {
-    params: {url},
-    headers: {
-      'x-api-key': 'b8iyzm2hYRJzamqXdoVG8iB0KPqmsUHzfKyGhgSn'
-    }
-  }).then(response => {
-    // Update the data in Firebase
-    snapshot.ref.update({
-      article: response.data
-    })
-  }).catch(error => {
-    // TODO: Add error handler here
-    console.error(error)
-  })
-})
+// db.ref('links').on('child_added', snapshot => {
+//   const url = snapshot.val().url
+//   axios.get('https://mercury.postlight.com/parser', {
+//     params: {url},
+//     headers: {
+//       'x-api-key': 'b8iyzm2hYRJzamqXdoVG8iB0KPqmsUHzfKyGhgSn'
+//     }
+//   }).then(response => {
+//     // Update the data in Firebase
+//     snapshot.ref.update({
+//       article: response.data
+//     })
+//   }).catch(error => {
+//     // TODO: Add error handler here
+//     console.error(error)
+//   })
+// })
 
 // TODO: Move this to a Firebase function
 db.ref('tags').on('child_added', snapshot => {
@@ -85,6 +84,39 @@ db.ref('tags').on('child_changed', (snapshot, prevChildKey) => {
       // TODO: Add error handler here
       console.error(error)
     })
+})
+
+// TODO: Add this module
+import algoliasearch from 'algoliasearch'
+
+db.ref('links').on('child_changed', (snapshot, prevChildKey) => {
+  // const ALGOLIA_ID = functions.config().algolia.app_id
+  const ALGOLIA_ID = '0BUYDPK0SC'
+  // const ALGOLIA_ADMIN_KEY = functions.config().algolia.api_key
+  const ALGOLIA_ADMIN_KEY = '308d005593bc5143c5c4c9b760baced7'
+  const ALGOLIA_INDEX_NAME = 'links'
+  const client = algoliasearch(ALGOLIA_ID, ALGOLIA_ADMIN_KEY)
+  const index = client.initIndex(ALGOLIA_INDEX_NAME)
+  // TODO: can i combine thse into a single api call?
+  // If it's non-null, it's an updated child
+  if (prevChildKey) {
+    return index.saveObject({
+      objectId: snapshot.key,
+      ...snapshot.val()
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+  // If it's null, it's a new child 
+  else {
+    // This requires an objectID
+    return index.addObject({
+      objectId: snapshot.key,
+      ...snapshot.val()
+    }).catch(err => {
+      console.error(err)
+    })
+  }
 })
 
 new Vue({

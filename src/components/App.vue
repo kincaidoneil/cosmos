@@ -38,7 +38,7 @@ html, body
   margin: 0
   padding: 0
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", sans-serif
-  overflow: none
+  overflow: hidden
   
 // TODO: Add a flex transition
 .container3
@@ -46,19 +46,22 @@ html, body
   height: 100%
   display: flex
   flex-flow: row
+  background: url("../../static/nebula.jpg")
+  background-position: center
   
   .navPane
-    flex: 1 0
+    flex: 2 0
     padding: 15px
     box-sizing: border-box
-    background: dodgerblue
     color: white
     // background: #303030
-  
+    // TODO: Fix the path
+    
   .listPane
-    flex: 2 0
+    flex: 3 0
     
   .readingPane
-    flex: 3 0
+    flex: 5 0
+    background: white
     
 </style>

@@ -1,27 +1,34 @@
 <template>
   <div class="container2">
     <!-- TODO: Add Share button for Facebook, Twitter, etc. Other services? Evernote? Download? -->
-    <button class="button" @click="openLink">Open in New Tab</button>
+    <button class="button" @click="openLink">Web View</button>
+    <button class="button">Reading View</button>
     <button class="button">Share</button>
-    <button class="button">Go Fullscreen</button>
+    <button class="button" @click="deleteLink">Delete</button>
+    <!-- TODO: Add a cover image -->
+    <!-- TODO: Change all other links to target="_blank" -->
     <div class="tags">
-      <span class="tag is-primary is-medium" v-for="(tag, name) in link.tags"
-        :style="{background: tags[name].color}">
-        <!-- <span class="icon">
-          <i class="fa fa-home"></i>
-        </span> -->
-        {{name}}
-        <button class="delete is-medium" @click="removeTag(name)"></button>
-      </span>
+      <transition-group name="list" tag="div">
+        <span class="tag is-primary is-medium" v-for="(tag, name) in link.tags"
+          :style="{background: tags[name].color}" :key="name">
+          <!-- <span class="icon">
+            <i class="fa fa-home"></i>
+          </span> -->
+          {{name}}
+          <button class="delete is-medium" @click="removeTag(name)"></button>
+        </span>
+      </transition-group>
       <input class="newTag" ref="newTag" v-model="newTag" placeholder="Add a tag..."
         @keydown.tab.prevent="addTag"
         @keydown.enter="addTag" />
       <!-- TODO: Add input autocomplete here -->
     </div>
-    <h1>{{link.article.title}}</h1>
-    <p class="content author">By {{link.article.author}} &middot; {{timePublished}}</p>
+    <h1>{{_link.title}}</h1>
+    <p class="content author">By {{_link.author}} &middot; {{timePublished}}</p>
     <!-- TODO: Look into XSS -->
-    <div class="content" v-html="link.article.content"></div>
+    <!-- TODO: How can change all links so they open in a new tab? -->
+    <!-- TODO: Do I just want to render the text content? Idk -->
+    <div class="content" v-html="_link.html"></div>
   </div>
 </template>
 <script>
@@ -37,7 +44,7 @@ export default {
   }),
   methods: {
     openLink() {
-      window.open(this.link.url)
+      window.open(this.link.request.resolvedPageUrl || this.link.request.pageUrl)
     },
     addTag() {
       // Verify tag isn't empty
@@ -58,16 +65,36 @@ export default {
       db.ref(`links/${this.selectedLink}/tags/${tag}`).remove()
       // TODO: Should removing the last link from a tag auto-delete the tag?
       db.ref(`tags/${tag}/links/${this.selectedLink}`).remove()
+    },
+    deleteLink() {
+      // TODO: Add "are you sure?" prompt
+      const db = this.$firebase.database()
+      // Remove individual link references from each tag with that link
+      const link = this.selectedLink
+      for (let tag in this.links[link].tags) {
+        db.ref(`tags/${tag}/links/${link}`).remove()
+      }
+      // Remove the link
+      db.ref(`links/${link}`).remove()
+      
+      // TODO: Change selected link!
+      // TODO: Is there a way to do undo/redo with Firebase? Probably not
+      
     }
   },
   computed: {
     ...mapState(['links', 'tags', 'selectedLink']),
+    _link() {
+      if (this.link.type === 'article') {
+        return this.link.objects[0]
+      }
+    },
     link() {
       return this.links[this.selectedLink]
     },
     timePublished() {
       // TODO: Add the time to this
-      return dateFns.format(new Date(this.link.article.date_published), 'MMM D, YYYY')
+      return dateFns.format(new Date(this._link.estimatedDate), 'MMM D, YYYY')
     }
   }
 }
@@ -119,6 +146,7 @@ h2
     
   img
     max-width: 100%
+    max-height: 500px
     
   figcaption, label
     font-style: italic
@@ -127,7 +155,30 @@ h2
 h1
   margin: 0 0 10px 0
   font-family: "Montserrat"
-  font-weight: bold
+  font-weight: 300
   line-height: 1.1em
+  
+// TODO: lets try to implement list transitions...
+  
+.flip-list-move
+  transition: transform 1s
+  
+.list-item
+  display: inline
+  margin-right: 10px
+  
+.list-enter-active, .list-leave-active
+  transition: width .5s ease-in-out, opacity .5s ease-in-out
+  width: 80px
+  margin: 2px 4px
+  
+.list-enter .delete, .list-leave-to .delete
+  display: none
+  
+.list-enter, .list-leave-to
+  opacity: 0
+  width: 0
+  // TODO: fix this
+  margin: 0
   
 </style>
